@@ -1,0 +1,15 @@
+{
+    "directories": {
+        "data_directory": "./data/"
+    },
+    "tokens": {},
+    "modules": {
+        "aniquotes": {
+            "port": 8001,
+            "description": "Simple module that sends random anime quotes on demand...",
+            "datas": {
+                "aq_file": "AQ.txt"
+            }
+        }
+    }
+}

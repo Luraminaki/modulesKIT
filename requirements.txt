@@ -1,0 +1,7 @@
+logging-reset
+unidecode
+aiosqlite
+requests
+fastapi
+fastapi-cli
+uvicorn
