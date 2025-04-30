@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class AniQuotesView(generic_api_views.GenericViews):
+class QuotesView(generic_api_views.GenericViews):
     def __init__(self, modules_config: dict=None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
@@ -29,13 +29,13 @@ class AniQuotesView(generic_api_views.GenericViews):
                 + modules_config['modules'][self.module_name]['datas']['aq_file'])
         ))
 
-        self.api_router.add_api_route("/get_quote",
-                                      self.get_quote,
+        self.api_router.add_api_route("/get_aniquote",
+                                      self.get_aniquote,
                                       methods=['GET'],
                                       description=f"Picks a random anime quote from the {self.aq.nbr_lines} available")
 
 
-    async def get_quote(self) -> dict[str, str]:
+    async def get_aniquote(self) -> dict[str, str]:
         curr_func = inspect.currentframe().f_code.co_name
 
         try:
