@@ -4,11 +4,11 @@
     },
     "tokens": {},
     "modules": {
-        "quotes": {
+        "anyquotes": {
             "port": 8001,
             "description": "Simple module that sends random quotes on demand...",
             "datas": {
-                "aq_file": "AQ.txt"
+                "template": "```<quote>\n- <author>```**<source_file>**"
             }
         }
     }
