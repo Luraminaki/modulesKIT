@@ -18,7 +18,7 @@ logger.setLevel(logging.INFO)
 
 
 class QuotesView(generic_api_views.GenericViews):
-    def __init__(self, modules_config: dict=None, *args, **kwargs) -> None:
+    def __init__(self, modules_config: dict | None = None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self.aq = anyquotes.AnyQuotes(self.module_name, modules_config)
@@ -29,7 +29,9 @@ class QuotesView(generic_api_views.GenericViews):
 
 
     async def get_quote(self) -> dict[str, str]:
-        curr_func = inspect.currentframe().f_code.co_name
+        curr_func = (cf.f_code.co_name
+                     if (cf := inspect.currentframe()) is not None
+                     else 'None')
 
         try:
             if not(res := self.aq.get_random_quote_from_csv()):

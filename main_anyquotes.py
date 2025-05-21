@@ -36,7 +36,9 @@ def create_app(config: dict, app_name: str) -> FastAPI:
 
 
 def main(conf: dict) -> int:
-    curr_func = inspect.currentframe().f_code.co_name
+    curr_func = (cf.f_code.co_name
+                 if (cf := inspect.currentframe()) is not None
+                 else 'None')
 
     try:
         logger.info(f"{curr_func} -- Creating APP: {APP_NAME}")
@@ -52,7 +54,9 @@ def main(conf: dict) -> int:
 
 
 if __name__ == "__main__":
-    c_func = inspect.currentframe().f_code.co_name
+    c_func = (cf.f_code.co_name
+              if (cf := inspect.currentframe()) is not None
+              else 'None')
     m_tic = time.perf_counter()
 
     logreset.reset_logging()

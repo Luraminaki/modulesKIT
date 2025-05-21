@@ -16,6 +16,8 @@ import linecache
 import logging
 import unidecode
 
+from typing import Generator
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -25,7 +27,8 @@ CWD = pathlib.Path.cwd()
 
 
 class AnyQuotes:
-    def __init__(self, module_name: str=None, modules_config: dict=None) -> None:
+    def __init__(self, module_name: str | None = None,
+                 modules_config: dict | None = None) -> None:
         if (not modules_config
             or not module_name
             or modules_config is None
@@ -36,7 +39,7 @@ class AnyQuotes:
         self.module_datas: dict[str, str] = modules_config['modules'][self.module_name]['datas']
 
         data_path: pathlib.Path = pathlib.Path(modules_config['directories']['data_directory'])/self.module_name
-        input_files: list[pathlib.Path] = data_path.glob('*.csv', case_sensitive=False)
+        input_files: Generator[pathlib.Path] = data_path.glob('*.csv', case_sensitive=False)
         self.q_datas: dict[pathlib.Path,
                            dict[str,
                                 int | str | list[str]]] = {file_name: {}
@@ -65,21 +68,28 @@ class AnyQuotes:
                         .replace('<source_file>', unidecode.unidecode(source_file)))
 
 
-    def get_random_quote_from_csv(self) -> list[str]:
-        curr_func = inspect.currentframe().f_code.co_name
+    def get_random_quote_from_csv(self) -> str:
+        curr_func = (cf.f_code.co_name
+                     if (cf := inspect.currentframe()) is not None
+                     else 'None')
 
         if not self.q_datas:
             logger.warning(f"{curr_func} -- Quote file folder is either empty or failed to be loaded")
-            return []
+            return ''
 
         q_file, q_details = random.choice(list(self.q_datas.items()))
-        q_line: str = linecache.getline(str(q_file.absolute()),
-                                        random.randint(1, q_details['nbr_lines'])).rstrip('\r\n')
+        q_line: str = (linecache.getline(str(q_file.absolute()),
+                                         random.randint(1, q_details['nbr_lines'])).rstrip('\r\n')
+                       if isinstance(q_details['nbr_lines'], int)
+                       else '')
 
-        q_data: dict[str, str] = {elem_type.lower(): elem
-                                  for elem_type, elem in zip(q_details['header'],
-                                                             q_line.split(';'))
-                                  if isinstance(elem_type, str) and isinstance(elem, str)}
+        q_data: dict[str, str] = ({elem_type.lower(): elem
+                                   for elem_type, elem in zip(q_details['header'],
+                                                              q_line.split(';'))
+                                   if isinstance(elem_type, str) and isinstance(elem, str)}
+                                  if isinstance(q_details['header'], list)
+                                  else {'quote': 'Nothing wrong with a man taking pleasure in his work.',
+                                        'author': 'John Doe'})
 
         return self.pretty_quote(q_file.stem,
                                  data_quote=q_data)

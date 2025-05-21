@@ -14,6 +14,7 @@ import pathlib
 import argparse
 import logging
 
+from typing import Callable
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -26,8 +27,10 @@ CWD = pathlib.Path.cwd()
 CONFIG_FILE = CWD/"config.json"
 
 
-def generic_create_app(config: dict, module_views: GenericViews=None) -> FastAPI:
-    curr_func = inspect.currentframe().f_code.co_name
+def generic_create_app(config: dict, module_views: GenericViews | None = None) -> FastAPI:
+    curr_func = (cf.f_code.co_name
+                     if (cf := inspect.currentframe()) is not None
+                     else 'None')
 
     if module_views is None:
         raise ValueError(f"{curr_func} -- module_views is None")
@@ -50,8 +53,10 @@ def generic_create_app(config: dict, module_views: GenericViews=None) -> FastAPI
     return webapp
 
 
-def generic_main(main: callable=None, version: str=''):
-    curr_func = inspect.currentframe().f_code.co_name
+def generic_main(main: Callable | None = None, version: str=''):
+    curr_func = (cf.f_code.co_name
+                     if (cf := inspect.currentframe()) is not None
+                     else 'None')
     m_tic = time.perf_counter()
 
     parser = argparse.ArgumentParser()
@@ -79,6 +84,10 @@ def generic_main(main: callable=None, version: str=''):
 
     logger.info(f"{curr_func} -- Current time is: {time.asctime(time.localtime())}")
     logger.info(f"{curr_func} -- {config_file} acquired")
+
+    if main is None:
+        logger.error(f"{curr_func} -- 'main' function is 'None' -- Aborting")
+        sys.exit(1)
 
     ret_val: int = main(conf)
 

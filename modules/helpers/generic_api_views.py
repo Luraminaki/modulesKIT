@@ -29,21 +29,23 @@ class GenericViews:
                                               list |
                                               list[dict[str, str | list[str]]] |
                                               list[dict[str, dict]]]:
-        curr_func = inspect.currentframe().f_code.co_name
+        curr_func = (cf.f_code.co_name
+                     if (cf := inspect.currentframe()) is not None
+                     else 'None')
 
         try:
-            data = [{'path': route.path,
-                     'name': route.name,
-                     'description': route.description,
-                     'methods': list(route.methods),
-                     'query_params': [{'name': query_param.name,
-                                       'core_schema': getattr(query_param._type_adapter, 'core_schema', {})}
-                                      for query_param in getattr(route.dependant, 'query_params', [])],
+            data = [{'path': getattr(route, 'path'),
+                     'name': getattr(route, 'name'),
+                     'description': getattr(route, 'description'),
+                     'methods': list(getattr(route, 'methods')),
+                     'query_params': [{'name': getattr(query_param, 'name'),
+                                       'core_schema': getattr(getattr(query_param, '_type_adapter'), 'core_schema', {})}
+                                      for query_param in getattr(getattr(route, 'dependant'), 'query_params', [])],
                      'response_model': [str(response_model)
-                                        for response_model in route.response_model
-                                        if route.response_model]}
+                                        for response_model in getattr(route, 'response_model')
+                                        if response_model]}
                     for route in self.api_router.routes
-                    if route.name != 'get_all_urls']
+                    if getattr(route, 'name', '') not in ('', 'get_all_urls')]
         except Exception as err:
             logger.error(f"{curr_func} -- {repr(err)}")
             return {'status': statics.StatusFunction.ERROR.name, 'error': repr(err)}
